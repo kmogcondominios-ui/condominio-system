@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Condominios</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/styles.css">
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+    <h2>Condominios</h2>
+
+    <a href="dashboard.html">
+        Dashboard
+    </a>
+
+    <a href="condominios.html">
+        Condominios
+    </a>
+
+</div>
+
+<div class="content">
+
+    <div class="d-flex justify-content-between mb-4">
+
+        <h1>Condominios</h1>
+
+    </div>
+
+    <div class="card shadow p-4 mb-4">
+
+        <div class="row">
+
+            <div class="col-md-4">
+
+                <input
+                    id="nombre"
+                    class="form-control"
+                    placeholder="Nombre">
+
+            </div>
+
+            <div class="col-md-4">
+
+                <input
+                    id="direccion"
+                    class="form-control"
+                    placeholder="Dirección">
+
+            </div>
+
+            <div class="col-md-4">
+
+                <input
+                    id="telefono"
+                    class="form-control"
+                    placeholder="Teléfono">
+
+            </div>
+
+        </div>
+
+        <button
+            class="btn btn-primary mt-3"
+            onclick="guardar()">
+
+            Guardar
+
+        </button>
+
+    </div>
+
+    <table class="table table-bordered bg-white">
+
+        <thead>
+
+            <tr>
+
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <th>Teléfono</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="tabla"></tbody>
+
+    </table>
+
+</div>
+
+<script>
+
+const token = localStorage.getItem("token");
+
+async function cargar(){
+
+    const response = await fetch(
+        "http://localhost:3000/api/condominios",
+        {
+            headers:{
+                Authorization: token
+            }
+        }
+    );
+
+    const data = await response.json();
+
+    let html = "";
+
+    data.forEach(c => {
+
+        html += `
+            <tr>
+                <td>${c.id}</td>
+                <td>${c.nombre}</td>
+                <td>${c.direccion}</td>
+                <td>${c.telefono}</td>
+            </tr>
+        `;
+
+    });
+
+    document.getElementById("tabla")
+        .innerHTML = html;
+
+}
+
+async function guardar(){
+
+    await fetch(
+        "http://localhost:3000/api/condominios",
+        {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+                Authorization: token
+            },
+            body: JSON.stringify({
+                nombre: nombre.value,
+                direccion: direccion.value,
+                telefono: telefono.value
+            })
+        }
+    );
+
+    nombre.value = "";
+    direccion.value = "";
+    telefono.value = "";
+
+    cargar();
+
+}
+
+cargar();
+
+</script>
+
+</body>
+</html>
