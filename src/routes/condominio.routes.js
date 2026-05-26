@@ -1,70 +1,180 @@
 const express = require("express");
 
+const router = express.Router();
+
 const prisma = require("../config/prisma");
 
 const auth = require("../middleware/auth");
-const { superadmin } = require("../middleware/roles");
 
-const router = express.Router();
+const upload = require("../config/multer");
 
-// LISTAR
 router.get("/", auth, async (req, res) => {
 
-  const data = await prisma.condominio.findMany();
+    const data = await prisma.condominio.findMany();
 
-  res.json(data);
+    res.json(data);
 
 });
 
-// CREAR
-router.post("/", auth, async (req, res) => {
+router.post(
+    "/",
+    auth,
+    upload.single("logo"),
+    async (req, res) => {
 
-  const {
+    try {
+
+        const nombre = req.body.nombre;
+
+        const direccion = req.body.direccion;
+
+        const telefono = req.body.telefono;
+
+        const folioActual =
+            req.body.folioActual;
+
+        const fondoInicial =
+            req.body.fondoInicial;
+
+        const saldoInicial =
+            req.body.saldoInicial;
+
+        const administradorNombre =
+            req.body.administradorNombre;
+
+        const administradorCargo =
+            req.body.administradorCargo;
+
+        const logo = req.file
+            ? req.file.filename
+            : null;
+
+        const nuevo = await prisma.condominio.create({
+            data:{
+                nombre,
+                direccion,
+                telefono,
+
+                folioActual:
+                    parseInt(folioActual || 1),
+
+                fondoInicial:
+                    parseFloat(fondoInicial || 0),
+
+                saldoInicial:
+                    parseFloat(saldoInicial || 0),
+
+                cuotaMensual:
+                    parseFloat(
+                        req.body.cuotaMensual || 0
+                    ),
+
+                administradorNombre,
+                administradorCargo,
+                logo
+
+    }
+
+});
+
+        res.json(nuevo);
+
+    } catch(error){
+
+        console.log(error);
+
+        res.status(500).json(error);
+
+    }
+
+});
+
+router.put(
+    "/:id",
+    auth,
+    upload.single("logo"),
+    async (req, res) => {
+
+    const id = parseInt(req.params.id);
+
+    const nombre = req.body.nombre;
+
+    const direccion = req.body.direccion;
+
+    const telefono = req.body.telefono;
+
+    const folioActual =
+        req.body.folioActual;
+
+    const fondoInicial =
+        req.body.fondoInicial;
+
+    const saldoInicial =
+        req.body.saldoInicial;
+
+    const administradorNombre =
+        req.body.administradorNombre;
+
+    const administradorCargo =
+        req.body.administradorCargo;
+
+    const logo = req.file
+    ? req.file.filename
+    : undefined;
+
+    const data = {
     nombre,
     direccion,
-    telefono
-  } = req.body;
+    telefono,
 
-  const nuevo = await prisma.condominio.create({
-    data: {
-      nombre,
-      direccion,
-      telefono
+    folioActual:
+        parseInt(folioActual || 1),
+
+    fondoInicial:
+        parseFloat(fondoInicial || 0),
+
+    saldoInicial:
+        parseFloat(saldoInicial || 0),
+
+    cuotaMensual:
+        parseFloat(
+            req.body.cuotaMensual || 0
+        ),
+
+    administradorNombre,
+
+    administradorCargo,
+
+    ...(logo && { logo })
+
+    };
+
+    if(req.file){
+
+        data.logo = req.file.filename;
+
     }
-  });
 
-  res.json(nuevo);
+    const actualizado =
+        await prisma.condominio.update({
+            where:{ id },
+            data
+        });
 
-});
-
-// EDITAR
-router.put("/:id", auth, async (req, res) => {
-
-  const id = parseInt(req.params.id);
-
-  const actualizado = await prisma.condominio.update({
-    where: { id },
-    data: req.body
-  });
-
-  res.json(actualizado);
+    res.json(actualizado);
 
 });
 
-// ELIMINAR
-router.delete("/:id",
-  auth,
-  superadmin,
-  async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
 
     const id = parseInt(req.params.id);
 
     await prisma.condominio.delete({
-      where: { id }
+        where:{ id }
     });
 
     res.json({
-      mensaje: "Condominio eliminado"
+        message:"Eliminado"
     });
 
 });

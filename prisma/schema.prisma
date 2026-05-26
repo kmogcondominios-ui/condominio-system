@@ -1,115 +1,212 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 model Usuario {
-  id        Int      @id @default(autoincrement())
-  nombre    String
-  correo    String   @unique
-  password  String
-  rol       String
-  activo    Boolean  @default(true)
+  id Int @id @default(autoincrement())
+
+  nombre String
+
+  correo String @unique
+
+  password String
+
+  rol String
+
+  activo Boolean @default(true)
+
   createdAt DateTime @default(now())
 }
 
 model Condominio {
-  id          Int      @id @default(autoincrement())
-  nombre      String
-  direccion   String
-  telefono    String
-  logo        String?
-  createdAt   DateTime @default(now())
+  id Int @id @default(autoincrement())
 
-  condominos  Condomino[]
-  pagos       Pago[]
+  nombre String
+
+  direccion String
+
+  telefono String
+
+  logo String?
+
+  folioActual Int @default(1)
+
+  fondoInicial Float @default(0)
+
+  cuotaMensual Float @default(0)
+
+  saldoInicial Float @default(0)
+
+  administradorNombre String?
+
+  administradorCargo String?
+
+  condominos Condomino[]
+
+  pagos Pago[]
+
+  cuotas CuotaMensual[]
+
+  adeudos Adeudo[]
+
   proveedores Proveedor[]
-  egresos     Egreso[]
-  inventario  Inventario[]
+
+  egresos Egreso[]
+
+  inventarios Inventario[]
 }
 
 model Condomino {
-  id            Int      @id @default(autoincrement())
-  nombre        String
-  vivienda      String
-  telefono      String
-  correo        String
-  saldo         Float    @default(0)
+  id Int @id @default(autoincrement())
 
-  condominioId  Int
-  condominio    Condominio @relation(fields: [condominioId], references: [id])
+  nombre String
 
-  pagos         Pago[]
-  adeudos       Adeudo[]
+  telefono String?
 
-  createdAt     DateTime @default(now())
+  correo String?
+
+  torre String?
+
+  departamento String?
+
+  activo Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  condominioId Int
+
+  condominio Condominio @relation(fields: [condominioId], references: [id])
+
+  pagos Pago[]
+
+  cuotas CuotaMensual[]
+
+  adeudos Adeudo[]
+
+  saldoFavor Float @default(0)
 }
 
 model Pago {
-  id            Int      @id @default(autoincrement())
-  tipo          String
-  descripcion   String
-  monto         Float
-  fecha         DateTime @default(now())
+  id Int @id @default(autoincrement())
 
-  condominoId   Int
-  condomino     Condomino @relation(fields: [condominoId], references: [id])
+  tipo String
 
-  condominioId  Int
-  condominio    Condominio @relation(fields: [condominioId], references: [id])
+  monto Float
+
+  descripcion String?
+
+  metodoPago String?
+
+  referencia String?
+
+  periodo String?
+
+  folioRecibo Int?
+
+  createdAt DateTime @default(now())
+
+  condominoId Int
+
+  condomino Condomino @relation(fields: [condominoId], references: [id])
+
+  condominioId Int
+
+  condominio Condominio @relation(fields: [condominioId], references: [id])
+}
+
+model CuotaMensual {
+
+  id Int @id @default(autoincrement())
+
+  periodo String
+
+  monto Float
+
+  saldoPendiente Float
+
+  pagado Boolean @default(false)
+
+  fechaPago DateTime?
+
+  interes Float @default(0)
+
+  condonado Float @default(0)
+
+  createdAt DateTime @default(now())
+
+  condominoId Int
+
+  condomino Condomino @relation(fields: [condominoId], references: [id])
+
+  condominioId Int
+
+  condominio Condominio @relation(fields: [condominioId], references: [id])
+
 }
 
 model Adeudo {
-  id            Int      @id @default(autoincrement())
-  concepto      String
-  monto         Float
-  pagado        Boolean  @default(false)
-  fecha         DateTime @default(now())
+  id Int @id @default(autoincrement())
 
-  condominoId   Int
-  condomino     Condomino @relation(fields: [condominoId], references: [id])
+  monto Float
+
+  descripcion String
+
+  createdAt DateTime @default(now())
+
+  condominoId Int
+
+  condomino Condomino @relation(fields: [condominoId], references: [id])
+
+  condominioId Int
+
+  condominio Condominio @relation(fields: [condominioId], references: [id])
 }
 
 model Proveedor {
-  id            Int      @id @default(autoincrement())
-  nombre        String
-  telefono      String
-  correo        String
-  tipo          String
+  id Int @id @default(autoincrement())
 
-  condominioId  Int
-  condominio    Condominio @relation(fields: [condominioId], references: [id])
+  nombre String
 
-  egresos       Egreso[]
+  telefono String?
 
-  createdAt     DateTime @default(now())
+  correo String?
+
+  tipo String
+
+  condominioId Int
+
+  condominio Condominio @relation(fields: [condominioId], references: [id])
 }
 
 model Egreso {
-  id            Int      @id @default(autoincrement())
-  descripcion   String
-  monto         Float
-  fecha         DateTime @default(now())
+  id Int @id @default(autoincrement())
 
-  proveedorId   Int
-  proveedor     Proveedor @relation(fields: [proveedorId], references: [id])
+  concepto String
 
-  condominioId  Int
-  condominio    Condominio @relation(fields: [condominioId], references: [id])
+  monto Float
+
+  createdAt DateTime @default(now())
+
+  condominioId Int
+
+  condominio Condominio @relation(fields: [condominioId], references: [id])
 }
 
 model Inventario {
-  id            Int      @id @default(autoincrement())
-  nombre        String
-  cantidad      Int
-  descripcion   String?
+  id Int @id @default(autoincrement())
 
-  condominioId  Int
-  condominio    Condominio @relation(fields: [condominioId], references: [id])
+  nombre String
 
-  createdAt     DateTime @default(now())
+  cantidad Int
+
+  createdAt DateTime @default(now())
+
+  condominioId Int
+
+  condominio Condominio @relation(fields: [condominioId], references: [id])
 }

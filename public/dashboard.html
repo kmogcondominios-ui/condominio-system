@@ -15,14 +15,50 @@
 
 <div class="sidebar">
 
-    <h2>Condominios</h2>
+    <div class="text-center mb-3">
 
-    <a href="dashboard.html">
-        Dashboard
+    <img
+        src="logo-empresa.png"
+        width="140">
+
+</div>
+
+<h2 class="text-center">
+    Condominios
+</h2>
+
+    <button
+        class="btn btn-danger w-100 mb-3"
+        onclick="salir()">
+
+        Salir
+
+    </button>
+
+    <a
+        href="dashboard.html"
+        class="active">
+
+        🏠 Dashboard
+
     </a>
 
     <a href="condominios.html">
-        Condominios
+
+        🏢 Condominios
+
+    </a>
+
+    <a href="condominos.html">
+
+        👥 Condóminos
+
+    </a>
+
+    <a href="pagos.html">
+
+        💰 Pagos
+
     </a>
 
 </div>
@@ -51,9 +87,10 @@
 
 </div>
 
+<script src="js/seguridad.js"></script>
+
 <script>
 
-const token = localStorage.getItem("token");
 
 async function cargarDatos(){
 

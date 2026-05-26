@@ -3,7 +3,10 @@ const jwt = require("jsonwebtoken");
 const SECRET = "SUPER_SECRET_KEY";
 
 function auth(req, res, next) {
-  const token = req.headers.authorization;
+  const token =
+    req.headers.authorization
+    ||
+    req.query.token;
 
   if (!token) {
     return res.status(401).json({

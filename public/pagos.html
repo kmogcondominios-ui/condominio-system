@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Pagos</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="css/styles.css">
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+    <div class="text-center mb-3">
+
+    <img
+        src="logo-empresa.png"
+        width="140">
+
+</div>
+
+<h2 class="text-center">
+    Condominios
+</h2>
+
+    <button
+        class="btn btn-danger w-100 mb-3"
+        onclick="salir()">
+
+        Salir
+
+    </button>
+
+    <a
+        href="dashboard.html">
+
+        🏠 Dashboard
+
+    </a>
+
+    <a href="condominios.html">
+
+        🏢 Condominios
+
+    </a>
+
+    <a href="condominos.html">
+
+        👥 Condóminos
+
+    </a>
+
+    <a href="pagos.html"
+        class="active">
+
+        💰 Pagos
+
+    </a>
+
+</div>
+
+<div class="content">
+
+    <h1 class="mb-4">
+        Pagos
+    </h1>
+
+    <div class="mb-4">
+
+        <input
+            id="busqueda"
+            class="form-control"
+            placeholder="Buscar pago..."
+            onkeyup="filtrar()">
+
+    </div>
+
+    <div class="card shadow p-4 mb-4">
+
+        <div class="row g-3">
+
+            <div class="col-md-2">
+
+                <select
+                    id="tipo"
+                    class="form-control">
+
+                    <option>
+                        Mantenimiento
+                    </option>
+
+                    <option>
+                        Extraordinaria
+                    </option>
+
+                    <option>
+                        Multa
+                    </option>
+
+                    <option>
+                        Intereses
+                    </option>
+
+                    <option>
+                        Otro
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="col-md-2">
+
+                <input
+                    id="monto"
+                    type="number"
+                    class="form-control"
+                    placeholder="Monto">
+
+            </div>
+
+            <div class="col-md-3">
+
+                <input
+                    id="descripcion"
+                    class="form-control"
+                    placeholder="Descripción">
+
+            </div>
+
+            <div class="col-md-3">
+
+                <select
+                    id="metodoPago"
+                    class="form-select">
+
+                    <option value="">
+                        Método pago
+                    </option>
+
+                    <option>
+                        Efectivo
+                    </option>
+
+                    <option>
+                        Transferencia Bancaria
+                    </option>
+
+                    <option>
+                        Depósito
+                    </option>
+
+                </select>
+
+            </div>
+
+
+<div class="col-md-3">
+
+    <input
+        id="periodo"
+        class="form-control"
+        placeholder="Periodo (Ej. Mayo 2024)">
+
+</div>
+
+            <div class="col-md-2">
+
+                <select
+                    id="condominioId"
+                    class="form-control"
+                    onchange="cargarCondominos()">
+
+                </select>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <select
+                    id="condominoId"
+                    class="form-control">
+
+                </select>
+
+            </div>
+
+        </div>
+
+        <button
+            id="btnGuardar"
+            class="btn btn-primary mt-3"
+            onclick="guardar()">
+
+            Guardar
+
+        </button>
+
+    </div>
+
+    <table class="table table-bordered bg-white">
+
+        <thead>
+
+            <tr>
+
+                <th>ID</th>
+                <th>Tipo</th>
+                <th>Monto</th>
+                <th>Folio</th>
+                <th>Descripción</th>
+                <th>Método</th>
+                <th>Periodo</th>
+                <th>Referencia</th>
+                <th>Condómino</th>
+                <th>Condominio</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="tabla"></tbody>
+
+    </table>
+
+    <div
+        class="d-flex justify-content-between align-items-center mt-3">
+
+        <button
+            class="btn btn-secondary"
+            onclick="anterior()">
+
+            ← Anterior
+
+        </button>
+
+        <span id="paginaActual">
+
+            Página 1
+
+        </span>
+
+        <button
+            class="btn btn-secondary"
+            onclick="siguiente()">
+
+            Siguiente →
+
+        </button>
+
+    </div>
+
+</div>
+
+<div
+    id="toast"
+    class="toast align-items-center text-white bg-success border-0 position-fixed bottom-0 end-0 m-4"
+    role="alert"
+    style="z-index:9999;">
+
+    <div class="d-flex">
+
+        <div
+            id="toastMensaje"
+            class="toast-body">
+
+            Guardado correctamente
+
+        </div>
+
+        <button
+            type="button"
+            class="btn-close btn-close-white me-2 m-auto"
+            data-bs-dismiss="toast">
+
+        </button>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="js/seguridad.js"></script>
+
+<script>
+
+
+let editandoId = null;
+
+let pagosData = [];
+
+let condominosData = [];
+
+let pagina = 1;
+
+const limite = 5;
+
+async function cargarCondominios(){
+
+    const response = await fetch(
+        "http://localhost:3000/api/condominios",
+        {
+            headers:{
+                Authorization: token
+            }
+        }
+    );
+
+    const data = await response.json();
+
+    let html = "";
+
+    data.forEach(c => {
+
+        html += `
+            <option value="${c.id}">
+                ${c.nombre}
+            </option>
+        `;
+
+    });
+
+    condominioId.innerHTML = html;
+
+    cargarCondominos();
+
+}
+
+async function cargarCondominos(){
+
+    const response = await fetch(
+        "http://localhost:3000/api/condominos",
+        {
+            headers:{
+                Authorization: token
+            }
+        }
+    );
+
+    const data = await response.json();
+
+    condominosData = data;
+
+    const filtrados =
+        data.filter(c =>
+
+            c.condominioId ==
+            condominioId.value
+
+        );
+
+    let html = "";
+
+    filtrados.forEach(c => {
+
+        html += `
+            <option value="${c.id}">
+                ${c.nombre}
+            </option>
+        `;
+
+    });
+
+    condominoId.innerHTML = html;
+
+}
+
+async function cargar(){
+
+    const response = await fetch(
+        "http://localhost:3000/api/pagos",
+        {
+            headers:{
+                Authorization: token
+            }
+        }
+    );
+
+    const data = await response.json();
+
+    pagosData = data;
+
+    renderTabla(pagosData);
+
+}
+
+function renderTabla(data){
+
+    const inicio =
+        (pagina - 1) * limite;
+
+    const fin =
+        inicio + limite;
+
+    const registros =
+        data.slice(inicio, fin);
+
+    let html = "";
+
+    registros.forEach(p => {
+
+        html += `
+        <tr>
+
+            <td>${p.id}</td>
+
+            <td>${p.tipo}</td>
+
+            <td>$ ${p.monto}</td>
+
+            <td>${p.folioRecibo || ""}</td>
+
+            <td>${p.descripcion || ""}</td>
+
+            <td>${p.metodoPago || ""}</td>
+
+            <td>${p.periodo || ""}</td>
+
+            <td>${p.referencia || ""}</td>
+
+            <td>${p.condomino.nombre}</td>
+
+            <td>${p.condominio.nombre}</td>
+
+            <td>
+                ${new Date(p.createdAt)
+                    .toLocaleDateString()}
+            </td>
+
+            <td>
+
+                <button
+                    class="btn btn-warning btn-sm me-2"
+                    onclick="editar(${p.id})">
+
+                    Editar
+
+                </button>
+
+                <button
+                    class="btn btn-success btn-sm me-2"
+                    onclick="recibo(${p.id})">
+
+                    PDF
+
+                </button>
+
+                <button
+                    class="btn btn-danger btn-sm"
+                    onclick="eliminar(${p.id})">
+
+                    Eliminar
+
+                </button>
+
+            </td>
+
+        </tr>
+        `;
+
+    });
+
+    tabla.innerHTML = html;
+
+    paginaActual.innerText =
+        "Página " + pagina;
+
+}
+
+async function guardar(){
+
+    if(
+    !monto.value ||
+    parseFloat(monto.value) <= 0
+){
+
+    mostrarToast(
+        "Monto inválido",
+        "warning"
+    );
+
+    return;
+
+}
+
+if(!condominoId.value){
+
+    mostrarToast(
+        "Seleccione un condómino",
+        "warning"
+    );
+
+    return;
+
+}
+
+    btnGuardar.disabled = true;
+
+    const url = editandoId
+        ? "http://localhost:3000/api/pagos/" + editandoId
+        : "http://localhost:3000/api/pagos";
+
+    const method = editandoId
+        ? "PUT"
+        : "POST";
+
+    await fetch(
+        url,
+        {
+            method,
+            headers:{
+                "Content-Type":"application/json",
+                Authorization: token
+            },
+            body: JSON.stringify({
+                tipo: tipo.value,
+                monto: monto.value,
+                descripcion: descripcion.value,
+                metodoPago: metodoPago.value,
+                periodo: periodo.value,
+                condominioId: condominioId.value,
+                condominoId: condominoId.value
+            })
+        }
+    );
+
+    tipo.value = "Mantenimiento";
+
+    monto.value = "";
+
+    descripcion.value = "";
+
+    metodoPago.value = "";
+
+    periodo.value = "";
+
+    editandoId = null;
+
+    btnGuardar.disabled = false;
+
+    mostrarToast(
+        "Pago guardado correctamente"
+    );
+
+    cargar();
+
+}
+
+async function editar(id){
+
+    const pago =
+        pagosData.find(
+            p => p.id === id
+        );
+
+    if(!pago)
+        return;
+
+    editandoId = id;
+
+    tipo.value = pago.tipo;
+
+    monto.value = pago.monto;
+
+    descripcion.value =
+        pago.descripcion || "";
+
+    metodoPago.value =
+        pago.metodoPago || "";
+
+    referencia.value =
+        pago.referencia || "";
+
+    periodo.value =
+        pago.periodo || "";
+
+    condominioId.value =
+        pago.condominioId;
+
+    await cargarCondominos();
+
+    setTimeout(() => {
+
+        condominoId.value =
+            pago.condominoId;
+
+    }, 100);
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+async function eliminar(id){
+
+    if(!confirm("¿Eliminar pago?"))
+        return;
+
+    await fetch(
+        "http://localhost:3000/api/pagos/" + id,
+        {
+            method:"DELETE",
+            headers:{
+                Authorization: token
+            }
+        }
+    );
+
+    mostrarToast(
+        "Pago eliminado"
+    );
+
+    cargar();
+
+}
+
+function filtrar(){
+
+    const texto =
+        busqueda.value.toLowerCase();
+
+    const filtrados =
+        pagosData.filter(p =>
+
+            p.tipo
+                .toLowerCase()
+                .includes(texto)
+
+            ||
+
+            p.condomino.nombre
+                .toLowerCase()
+                .includes(texto)
+
+            ||
+
+            p.condominio.nombre
+                .toLowerCase()
+                .includes(texto)
+
+        );
+
+    renderTabla(filtrados);
+
+}
+
+function siguiente(){
+
+    const totalPaginas =
+        Math.ceil(
+            pagosData.length / limite
+        );
+
+    if(pagina < totalPaginas){
+
+        pagina++;
+
+        renderTabla(pagosData);
+
+    }
+
+}
+
+function anterior(){
+
+    if(pagina > 1){
+
+        pagina--;
+
+        renderTabla(pagosData);
+
+    }
+
+}
+
+function mostrarToast(
+    mensaje,
+    tipo = "success"
+){
+
+    const toast =
+        document.getElementById("toast");
+
+    const toastMensaje =
+        document.getElementById(
+            "toastMensaje"
+        );
+
+    toastMensaje.innerText = mensaje;
+
+    toast.classList.remove(
+        "bg-success",
+        "bg-danger",
+        "bg-warning"
+    );
+
+    if(tipo === "success"){
+
+        toast.classList.add(
+            "bg-success"
+        );
+
+    }
+
+    if(tipo === "danger"){
+
+        toast.classList.add(
+            "bg-danger"
+        );
+
+    }
+
+    if(tipo === "warning"){
+
+        toast.classList.add(
+            "bg-warning"
+        );
+
+    }
+
+    const bsToast =
+        new bootstrap.Toast(toast);
+
+    bsToast.show();
+
+}
+
+function recibo(id){
+
+    window.open(
+
+        "http://localhost:3000/api/pagos/" +
+        id +
+        "/recibo?token=" +
+        token,
+
+        "_blank"
+
+    );
+
+}
+
+cargarCondominios();
+
+cargar();
+
+</script>
+
+</body>
+</html>

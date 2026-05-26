@@ -5,7 +5,9 @@
 
     <title>Condominios</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
 
     <link rel="stylesheet" href="css/styles.css">
 
@@ -15,60 +17,180 @@
 
 <div class="sidebar">
 
-    <h2>Condominios</h2>
+    <div class="text-center mb-3">
 
-    <a href="dashboard.html">
-        Dashboard
+    <img
+        src="logo-empresa.png"
+        width="140">
+
+</div>
+
+<h2 class="text-center">
+    Condominios
+</h2>
+
+    <button
+        class="btn btn-danger w-100 mb-3"
+        onclick="salir()">
+
+        Salir
+
+    </button>
+
+    <a
+        href="dashboard.html">
+
+        🏠 Dashboard
+
     </a>
 
-    <a href="condominios.html">
-        Condominios
+    <a href="condominios.html"
+        class="active">
+
+        🏢 Condominios
+
+    </a>
+
+    <a href="condominos.html">
+
+        👥 Condóminos
+
+    </a>
+
+    <a href="pagos.html">
+
+        💰 Pagos
+
     </a>
 
 </div>
 
 <div class="content">
 
-    <div class="d-flex justify-content-between mb-4">
+    <h1 class="mb-4">
+        Condominios
+    </h1>
 
-        <h1>Condominios</h1>
+    <div class="mb-4">
+
+        <input
+            id="busqueda"
+            class="form-control"
+            placeholder="Buscar condominio..."
+            onkeyup="filtrar()">
 
     </div>
 
     <div class="card shadow p-4 mb-4">
 
-        <div class="row">
+        <div class="row g-3">
 
-            <div class="col-md-4">
+    <div class="col-md-4">
 
-                <input
-                    id="nombre"
-                    class="form-control"
-                    placeholder="Nombre">
+        <input
+            id="nombre"
+            class="form-control"
+            placeholder="Nombre">
 
-            </div>
+    </div>
 
-            <div class="col-md-4">
+    <div class="col-md-4">
 
-                <input
-                    id="direccion"
-                    class="form-control"
-                    placeholder="Dirección">
+        <input
+            id="direccion"
+            class="form-control"
+            placeholder="Dirección">
 
-            </div>
+    </div>
 
-            <div class="col-md-4">
+    <div class="col-md-4">
 
-                <input
-                    id="telefono"
-                    class="form-control"
-                    placeholder="Teléfono">
+        <input
+            id="telefono"
+            class="form-control"
+            placeholder="Teléfono">
 
-            </div>
+    </div>
 
-        </div>
+</div>
+
+<div class="row g-3 mt-1">
+
+    <div class="col-md-3">
+
+        <input
+            id="folioActual"
+            type="number"
+            class="form-control"
+            placeholder="Folio actual">
+
+    </div>
+
+    <div class="col-md-3">
+
+        <input
+            id="fondoInicial"
+            type="number"
+            class="form-control"
+            placeholder="Fondo inicial">
+
+    </div>
+
+    <div class="col-md-3">
+
+        <input
+            id="saldoInicial"
+            type="number"
+            class="form-control"
+            placeholder="Saldo inicial">
+
+    </div>
+
+    <div class="col-md-2">
+
+        <input
+            id="cuotaMensual"
+            type="number"
+            class="form-control"
+            placeholder="Cuota mensual">
+
+    </div>
+
+    <div class="col-md-3">
+
+        <input
+            type="file"
+            id="logo"
+            class="form-control">
+
+    </div>
+
+</div>
+
+    <div class="row g-3 mt-1">
+
+    <div class="col-md-6">
+
+        <input
+            id="administradorNombre"
+            class="form-control"
+            placeholder="Nombre administrador">
+
+    </div>
+
+    <div class="col-md-6">
+
+        <input
+            id="administradorCargo"
+            class="form-control"
+            placeholder="Cargo administrador">
+
+    </div>
+
+</div>
 
         <button
+            id="btnGuardar"
             class="btn btn-primary mt-3"
             onclick="guardar()">
 
@@ -88,6 +210,14 @@
                 <th>Nombre</th>
                 <th>Dirección</th>
                 <th>Teléfono</th>
+                <th>Folio</th>
+                <th>Fondo</th>
+                <th>Saldo</th>
+                <th>Cuota</th>
+                <th>Administrador</th>
+                <th>Cargo</th>
+                <th>Logo</th>
+                <th>Acciones</th>
 
             </tr>
 
@@ -97,11 +227,45 @@
 
     </table>
 
+    <div
+        class="d-flex justify-content-between align-items-center mt-3">
+
+        <button
+            class="btn btn-secondary"
+            onclick="anterior()">
+
+            ← Anterior
+
+        </button>
+
+        <span id="paginaActual">
+
+            Página 1
+
+        </span>
+
+        <button
+            class="btn btn-secondary"
+            onclick="siguiente()">
+
+            Siguiente →
+
+        </button>
+
+    </div>  
+
 </div>
+
+<script src="js/seguridad.js"></script>
 
 <script>
 
-const token = localStorage.getItem("token");
+
+let editandoId = null;
+let condominiosData = [];
+let pagina = 1;
+
+const limite = 5;
 
 async function cargar(){
 
@@ -116,47 +280,336 @@ async function cargar(){
 
     const data = await response.json();
 
+    condominiosData = data;
+
+    renderTabla(condominiosData);
+
+}
+
+function renderTabla(data){
+
+    const inicio =
+        (pagina - 1) * limite;
+
+    const fin =
+        inicio + limite;
+
+    const registros =
+        data.slice(inicio, fin);
+
     let html = "";
 
-    data.forEach(c => {
+    registros.forEach(c => {
 
         html += `
-            <tr>
-                <td>${c.id}</td>
-                <td>${c.nombre}</td>
-                <td>${c.direccion}</td>
-                <td>${c.telefono}</td>
-            </tr>
+        <tr>
+
+            <td>${c.id}</td>
+
+            <td>${c.nombre}</td>
+
+            <td>${c.direccion}</td>
+
+            <td>${c.telefono}</td>
+
+            <td>${c.folioActual}</td>
+
+            <td>$ ${c.fondoInicial}</td>
+
+            <td>$ ${c.saldoInicial}</td>
+
+            <td>
+
+                $ ${parseFloat(
+                    c.cuotaMensual || 0
+                ).toFixed(2)}
+
+            </td>
+
+            <td>${c.administradorNombre || ""}</td>
+
+            <td>${c.administradorCargo || ""}</td>
+
+            <td>
+
+                ${
+                    c.logo
+                    ? `<img
+                        src="/uploads/${c.logo}"
+                        width="80">`
+                    : ""
+                }
+
+            </td>
+
+            <td>
+
+                <button
+                    class="btn btn-warning btn-sm me-2"
+                    onclick="editar(${c.id})">
+
+                    Editar
+
+                </button>
+
+                <button
+                    class="btn btn-danger btn-sm"
+                    onclick="eliminar(${c.id})">
+
+                    Eliminar
+
+                </button>
+
+            </td>
+
+        </tr>
         `;
 
     });
 
-    document.getElementById("tabla")
-        .innerHTML = html;
+    tabla.innerHTML = html;
+
+    paginaActual.innerText =
+        "Página " + pagina;
 
 }
 
 async function guardar(){
 
+    if(
+        !nombre.value.trim() ||
+        !direccion.value.trim() ||
+        !telefono.value.trim()
+    ){
+
+        mostrarToast(
+            "Complete todos los campos",
+        "warning"
+        );
+
+        return;
+
+    }
+
+    btnGuardar.disabled = true;
+
+    const responseCondominios =
+        await fetch(
+            "http://localhost:3000/api/condominios",
+            {
+                headers:{
+                    Authorization: token
+                }
+            }
+        );
+
+    const condominios =
+        await responseCondominios.json();
+
+    const existe = condominios.find(c =>
+
+        c.nombre.toLowerCase().trim()
+        ===
+        nombre.value.toLowerCase().trim()
+
+        &&
+
+        c.id !== editandoId
+
+    );
+
+    if(existe){
+
+        mostrarToast(
+            "El condominio ya existe",
+            "danger"
+        );
+
+        btnGuardar.disabled = false;
+
+        return;
+
+    }
+
+    const formData = new FormData();
+
+    formData.append(
+        "nombre",
+        nombre.value.trim()
+    );
+
+    formData.append(
+        "direccion",
+        direccion.value.trim()
+    );
+
+    formData.append(
+        "telefono",
+        telefono.value.trim()
+    );
+
+    formData.append(
+        "folioActual",
+        folioActual.value || 1
+    );
+
+    formData.append(
+        "fondoInicial",
+        fondoInicial.value || 0
+    ); 
+
+    formData.append(
+        "saldoInicial",
+        saldoInicial.value || 0
+    );
+
+    formData.append(
+        "cuotaMensual",
+        cuotaMensual.value || 0
+    );
+
+    formData.append(
+        "administradorNombre",
+        administradorNombre.value
+    );
+
+    formData.append(
+        "administradorCargo",
+        administradorCargo.value
+    );
+
+    if(logo.files[0]){
+
+        formData.append(
+            "logo",
+            logo.files[0]
+        );
+
+    }
+
+    const url = editandoId
+        ? "http://localhost:3000/api/condominios/" + editandoId
+        : "http://localhost:3000/api/condominios";
+
+    const method = editandoId
+        ? "PUT"
+        : "POST";
+
     await fetch(
-        "http://localhost:3000/api/condominios",
+        url,
         {
-            method:"POST",
+            method,
             headers:{
-                "Content-Type":"application/json",
                 Authorization: token
             },
-            body: JSON.stringify({
-                nombre: nombre.value,
-                direccion: direccion.value,
-                telefono: telefono.value
-            })
+            body: formData
         }
     );
 
     nombre.value = "";
+
     direccion.value = "";
+
     telefono.value = "";
+
+    folioActual.value = "";
+
+    fondoInicial.value = "";
+
+    saldoInicial.value = "";
+
+    cuotaMensual.value = "";
+
+    administradorNombre.value = "";
+
+    administradorCargo.value = "";
+
+    logo.value = "";
+
+    editandoId = null;
+
+    btnGuardar.disabled = false;
+
+    mostrarToast(
+        "Condominio guardado correctamente"
+    );
+
+    cargar();
+
+}
+
+
+async function editar(id){
+
+    const response = await fetch(
+        "http://localhost:3000/api/condominios",
+        {
+            headers:{
+                Authorization: token
+            }
+        }
+    );
+
+    const data = await response.json();
+
+    const condominio = data.find(
+        c => c.id === id
+    );
+
+    if(!condominio)
+        return;
+
+    editandoId = id;
+
+    nombre.value = condominio.nombre;
+
+    direccion.value = condominio.direccion;
+
+    telefono.value = condominio.telefono;
+
+    folioActual.value =
+        condominio.folioActual || 1;
+
+    fondoInicial.value =
+        condominio.fondoInicial || 0;
+
+    saldoInicial.value =
+        condominio.saldoInicial || 0;
+
+    cuotaMensual.value =
+        condominio.cuotaMensual || 0;
+
+    administradorNombre.value =
+        condominio.administradorNombre || "";
+
+    administradorCargo.value =
+        condominio.administradorCargo || "";
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+async function eliminar(id){
+
+    if(!confirm("¿Eliminar condominio?"))
+        return;
+
+    await fetch(
+        "http://localhost:3000/api/condominios/" + id,
+        {
+            method:"DELETE",
+            headers:{
+                Authorization: token
+            }
+        }
+    );
+
+    mostrarToast(
+        "Condominio eliminado"
+    );
 
     cargar();
 
@@ -164,7 +617,201 @@ async function guardar(){
 
 cargar();
 
+function mostrarToast(
+    mensaje,
+    tipo = "success"
+){
+
+    const toast =
+        document.getElementById("toast");
+
+    const toastMensaje =
+        document.getElementById(
+            "toastMensaje"
+        );
+
+    toastMensaje.innerText = mensaje;
+
+    toast.classList.remove(
+        "bg-success",
+        "bg-danger",
+        "bg-warning"
+    );
+
+    if(tipo === "success"){
+
+        toast.classList.add(
+            "bg-success"
+        );
+
+    }
+
+    if(tipo === "danger"){
+
+        toast.classList.add(
+            "bg-danger"
+        );
+
+    }
+
+    if(tipo === "warning"){
+
+        toast.classList.add(
+            "bg-warning"
+        );
+
+    }
+
+    const bsToast =
+        new bootstrap.Toast(toast);
+
+    bsToast.show();
+
+}
+
+function filtrar(){
+
+    const texto =
+        busqueda.value.toLowerCase();
+
+    const filtrados =
+        condominiosData.filter(c =>
+
+            c.nombre
+                .toLowerCase()
+                .includes(texto)
+
+            ||
+
+            c.direccion
+                .toLowerCase()
+                .includes(texto)
+
+            ||
+
+            c.telefono
+                .toLowerCase()
+                .includes(texto)
+
+        );
+
+    let html = "";
+
+    filtrados.forEach(c => {
+
+        html += `
+        <tr>
+
+            <td>${c.id}</td>
+
+            <td>${c.nombre}</td>
+
+            <td>${c.direccion}</td>
+
+            <td>${c.telefono}</td>
+
+            <td>
+
+                ${
+                    c.logo
+                    ? `<img
+                        src="/uploads/${c.logo}"
+                        width="80">`
+                    : ""
+                }
+
+            </td>
+
+            <td>
+
+                <button
+                    class="btn btn-warning btn-sm me-2"
+                    onclick="editar(${c.id})">
+
+                    Editar
+
+                </button>
+
+                <button
+                    class="btn btn-danger btn-sm"
+                    onclick="eliminar(${c.id})">
+
+                    Eliminar
+
+                </button>
+
+            </td>
+
+        </tr>
+        `;
+
+    });
+
+    tabla.innerHTML = html;
+
+}
+
+function siguiente(){
+
+    const totalPaginas =
+        Math.ceil(
+            condominiosData.length / limite
+        );
+
+    if(pagina < totalPaginas){
+
+        pagina++;
+
+        renderTabla(condominiosData);
+
+    }
+
+}
+
+function anterior(){
+
+    if(pagina > 1){
+
+        pagina--;
+
+        renderTabla(condominiosData);
+
+    }
+
+}
+
 </script>
+
+
+
+<div
+    id="toast"
+    class="toast align-items-center text-white bg-success border-0 position-fixed bottom-0 end-0 m-4"
+    role="alert"
+    style="z-index:9999;">
+
+    <div class="d-flex">
+
+        <div
+            id="toastMensaje"
+            class="toast-body">
+
+            Guardado correctamente
+
+        </div>
+
+        <button
+            type="button"
+            class="btn-close btn-close-white me-2 m-auto"
+            data-bs-dismiss="toast">
+
+        </button>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
